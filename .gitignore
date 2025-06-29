@@ -19,6 +19,7 @@ bun.lockb
 *.wasm
 zig-cache/
 zig-out/
+.zig-cache/
 
 # TypeScript
 *.d.ts
