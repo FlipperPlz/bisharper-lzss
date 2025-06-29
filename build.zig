@@ -1,7 +1,6 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
     const wasm_target = b.resolveTargetQuery(.{
@@ -11,7 +10,7 @@ pub fn build(b: *std.Build) void {
 
     const wasm_lib = b.addExecutable(.{
         .name = "bisharper",
-        .root_source_file = b.path("src/wasm/bindings.zig"),
+        .root_source_file = b.path("src/root.zig"),
         .target = wasm_target,
         .optimize = optimize,
         .strip = optimize != .Debug,
@@ -19,43 +18,48 @@ pub fn build(b: *std.Build) void {
 
     wasm_lib.entry = .disabled;
     wasm_lib.rdynamic = true;
-    wasm_lib.import_memory = true;
     wasm_lib.stack_size = 1024 * 1024;
-    wasm_lib.initial_memory = 65536 * 32;
-    wasm_lib.max_memory = 65536 * 256;
+    wasm_lib.initial_memory = 65536 * 64;
+    wasm_lib.max_memory = 65536 * 512;
 
     const wasm_install = b.addInstallArtifact(wasm_lib, .{
         .dest_dir = .{ .override = .{ .custom = "../dist" } },
     });
 
-    const native_lib = b.addStaticLibrary(.{
-        .name = "bisharper-native",
-        .root_source_file = b.path("src/root.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     const wasm_step = b.step("wasm", "Build WASM library");
     wasm_step.dependOn(&wasm_install.step);
 
-    const native_step = b.step("native", "Build native library and CLI");
-    native_step.dependOn(&b.addInstallArtifact(native_lib, .{}).step);
-
-    const lib_tests = b.addTest(.{
-        .root_source_file = b.path("src/root.zig"),
-        .target = target,
+    // Native Tests (for running tests)
+    const native_tests = b.addTest(.{
+        .name = "tests",
+        .root_source_file = b.path("src/tests.zig"),
+        .target = b.standardTargetOptions(.{}),
         .optimize = optimize,
     });
 
+    const test_step = b.step("test", "Run tests");
+    test_step.dependOn(&b.addRunArtifact(native_tests).step);
+
+    // WASM Tests (optional - for building WASM test binary)
     const wasm_tests = b.addTest(.{
-        .root_source_file = b.path("src/wasm/bindings.zig"),
-        .target = target,
+        .name = "wasm-tests",
+        .root_source_file = b.path("src/tests.zig"),
+        .target = wasm_target,
         .optimize = optimize,
     });
 
-    const test_step = b.step("test", "Run all tests");
-    test_step.dependOn(&b.addRunArtifact(lib_tests).step);
-    test_step.dependOn(&b.addRunArtifact(wasm_tests).step);
+    wasm_tests.entry = .disabled;
+    wasm_tests.rdynamic = true;
+    wasm_tests.stack_size = 1024 * 1024;
+    wasm_tests.initial_memory = 65536 * 64;
+    wasm_tests.max_memory = 65536 * 512;
+
+    const wasm_test_install = b.addInstallArtifact(wasm_tests, .{
+        .dest_dir = .{ .override = .{ .custom = "../dist" } },
+    });
+
+    const wasm_test_step = b.step("test-wasm", "Build WASM tests");
+    wasm_test_step.dependOn(&wasm_test_install.step);
 
     // Benchmark
     // const benchmark = b.addExecutable(.{

@@ -7,7 +7,7 @@
   },
   "name": "bisharper-lzss",
   "version": "0.1.0",
-  "description": "",
+  "description": "High-performance LZSS compression library written in Zig with WebAssembly bindings",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,9 +22,12 @@
     "build:js": "bun build js/index.ts --outdir dist --target node --target browser --splitting",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "test:zig": "zig build test",
+    "test:js": "bun run js/test.ts",
+    "test": "bun run test:zig && bun run test:js",
     "dev": "bun run build && bun test",
     "clean": "rm -rf dist/ zig-out/",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "example": "bun run js/example.ts"
   },
   "keywords": [
     "compression",
@@ -58,5 +61,11 @@
   },
   "dependencies": {
     "bun": "^1.2.17"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/bisharper-lzss.git"
+  },
+  "author": "Your Name",
+  "license": "MIT"
 }
