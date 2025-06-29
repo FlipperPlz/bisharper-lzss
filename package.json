@@ -1,0 +1,62 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "name": "bisharper-lzss",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "build:wasm": "zig build wasm",
+    "build:js": "bun build js/index.ts --outdir dist --target node --target browser --splitting",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "test:zig": "zig build test",
+    "dev": "bun run build && bun test",
+    "clean": "rm -rf dist/ zig-out/",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "compression",
+    "lzss",
+    "wasm",
+    "webassembly",
+    "zig",
+    "dayz",
+    "arma",
+    "bohemia",
+    "performance",
+    "binary"
+  ],
+  "engines": {
+    "node": ">=16",
+    "bun": ">=1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.17",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./wasm": "./dist/bisharper.wasm",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "bun": "^1.2.17"
+  }
+}
